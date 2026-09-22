@@ -199,7 +199,9 @@ Window:CreateTab({ Name = "Empty", Desc = "Nothing in here", Icon = "package" })
 
 local Settings = Window:CreateTab({ Name = "Settings", Icon = "settings" })
 
-Settings:CreateDropdown({
+Settings:CreateSection("Appearance")
+
+local ThemeSelector = Settings:CreateDropdown({
     Name = "UI Theme",
     Desc = "Change the interface theme instantly",
     Options = Airflow:GetThemeNames(),
@@ -207,6 +209,17 @@ Settings:CreateDropdown({
     Flag = "UITheme",
     Callback = function(ThemeName)
         Airflow:SetTheme(ThemeName)
+    end,
+})
+
+local CustomThemeColor = Settings:CreateColorPicker({
+    Name = "Custom theme color",
+    Desc = "Choose your own accent color for Custom",
+    Color = Airflow.CustomThemeColor,
+    Flag = "UIThemeColor",
+    Callback = function(Color)
+        ThemeSelector:Set("Custom", true)
+        Airflow:SetCustomTheme(Color)
     end,
 })
 
@@ -235,4 +248,11 @@ Settings:CreateButton({
 })
 
 Window:LoadConfig()
+
+local SavedTheme = ThemeSelector:Get() or "Default"
+if SavedTheme == "Custom" then
+    Airflow:SetCustomTheme(CustomThemeColor:Get() or Airflow.CustomThemeColor)
+else
+    Airflow:SetTheme(SavedTheme)
+end
 
