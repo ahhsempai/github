@@ -4929,3 +4929,5 @@ function Window:Destroy()
     end)
 end
 
+return Library
+
