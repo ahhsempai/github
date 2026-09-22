@@ -1,4 +1,4 @@
-local Airflow = loadstring(game:HttpGet("https://raw.githubusercontent.com/ahhsempai/github/refs/heads/main/Source.luau"))()
+local Airflow = loadstring(game:HttpGet("https://raw.githubusercontent.com/ahhsempai/github/main/Source.luau"))()
 
 Airflow:LoadFont({ Name = "ValleySans" })
 
