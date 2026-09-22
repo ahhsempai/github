@@ -9,6 +9,8 @@ local LocalPlayer = Players.LocalPlayer
 
 local Library = {}
 
+Library.__AirflowVersion = "2.0.0"
+
 Library.Flags = {}
 Library.Windows = {}
 
