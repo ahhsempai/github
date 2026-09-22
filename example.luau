@@ -218,8 +218,9 @@ local CustomThemeColor = Settings:CreateColorPicker({
     Color = Airflow.CustomThemeColor,
     Flag = "UIThemeColor",
     Callback = function(Color)
-        ThemeSelector:Set("Custom", true)
         Airflow:SetCustomTheme(Color)
+        ThemeSelector:Set("Custom", true)
+        Window:_autoSave()
     end,
 })
 
