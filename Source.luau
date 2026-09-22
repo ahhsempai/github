@@ -9,8 +9,6 @@ local LocalPlayer = Players.LocalPlayer
 
 local Library = {}
 
-Library.__AirflowVersion = "2.1.0"
-
 Library.Flags = {}
 Library.Windows = {}
 
@@ -2603,60 +2601,27 @@ end
 
 local function buildCustomTheme(accent)
     accent = typeof(accent) == "Color3" and accent or Library.Theme.Accent
-    local h, s, v = Color3.toHSV(accent)
-    local tint = math.clamp(s * 0.45, 0.05, 0.55)
-    local mutedS = math.clamp(s * 0.25, 0.06, 0.32)
-    local function dark(value, saturation)
-        return Color3.fromHSV(h, saturation, value)
+    local hue, saturation, value = Color3.toHSV(accent)
+    local baseSaturation = math.clamp(saturation * 0.42, 0.04, 0.36)
+    local surfaceSaturation = math.clamp(saturation * 0.5, 0.05, 0.44)
+    local function shade(brightness, sat)
+        return Color3.fromHSV(hue, sat, brightness)
     end
     return {
-        Background = dark(0.055, tint),
-        Surface = dark(0.078, tint * 0.95),
-        Surface2 = dark(0.108, math.clamp(tint * 1.05, 0.05, 0.6)),
-        Surface3 = dark(0.18, math.clamp(tint * 1.15, 0.06, 0.68)),
-        Stroke = dark(0.22, math.clamp(tint * 1.12, 0.06, 0.7)),
-        StrokeHover = dark(0.38, math.clamp(s * 0.7, 0.08, 0.85)),
+        Background = shade(0.055, baseSaturation),
+        Surface = shade(0.078, baseSaturation),
+        Surface2 = shade(0.11, surfaceSaturation),
+        Surface3 = shade(0.18, math.clamp(surfaceSaturation * 1.15, 0.06, 0.56)),
+        Stroke = shade(0.22, math.clamp(surfaceSaturation * 1.1, 0.06, 0.6)),
+        StrokeHover = shade(0.36, math.clamp(saturation * 0.72, 0.06, 0.82)),
         Accent = accent,
-        AccentDark = dark(math.clamp(v * 0.2, 0.08, 0.22), math.clamp(s * 0.9, 0.08, 0.95)),
+        AccentDark = shade(math.clamp(value * 0.18, 0.06, 0.2), math.clamp(saturation * 0.92, 0.08, 0.95)),
         Text = Color3.fromRGB(236, 240, 246),
-        Muted = dark(0.58, mutedS),
+        Muted = shade(0.58, math.clamp(saturation * 0.23, 0.05, 0.3)),
         Warning = Color3.fromRGB(240, 176, 108),
         Success = Color3.fromRGB(150, 220, 170),
         Error = Color3.fromRGB(240, 120, 120),
     }
-end
-
-local function applyTheme(preset, themeName)
-    if type(preset) ~= "table" then
-        return false
-    end
-
-    local oldTheme = {}
-    for name, color in pairs(Library.Theme) do
-        oldTheme[name] = color
-    end
-
-    for name, color in pairs(preset) do
-        if Library.Theme[name] ~= nil and typeof(color) == "Color3" then
-            Library.Theme[name] = color
-        end
-    end
-
-    Library.CurrentTheme = themeName
-    NOTIFY_COLORS.Success = Theme.Success
-    NOTIFY_COLORS.Warning = Theme.Warning
-    NOTIFY_COLORS.Error = Theme.Error
-
-    for _, window in ipairs(Library.Windows) do
-        if window.Gui and window.Gui.Parent then
-            applyThemeToInstance(window.Gui, oldTheme, Library.Theme)
-            for _, instance in ipairs(window.Gui:GetDescendants()) do
-                applyThemeToInstance(instance, oldTheme, Library.Theme)
-            end
-        end
-    end
-
-    return true
 end
 
 function Library:GetThemeNames()
@@ -2674,17 +2639,50 @@ function Library:SetCustomTheme(color)
         return false
     end
     self.CustomThemeColor = color
-    return applyTheme(buildCustomTheme(color), "Custom")
+    return self:SetTheme(buildCustomTheme(color))
 end
 
 function Library:SetTheme(theme)
     if theme == "Custom" then
-        return self:SetCustomTheme(self.CustomThemeColor)
+        return self:SetTheme(buildCustomTheme(self.CustomThemeColor))
     end
-    if type(theme) ~= "string" then
+
+    local preset = theme
+    local themeName = "Custom"
+    if type(theme) == "string" then
+        preset = self.ThemePresets[theme]
+        themeName = theme
+    end
+    if type(preset) ~= "table" then
         return false
     end
-    return applyTheme(self.ThemePresets[theme], theme)
+
+    local oldTheme = {}
+    for name, color in pairs(self.Theme) do
+        oldTheme[name] = color
+    end
+
+    for name, color in pairs(preset) do
+        if self.Theme[name] ~= nil and typeof(color) == "Color3" then
+            self.Theme[name] = color
+        end
+    end
+
+    self.CurrentTheme = themeName
+    NOTIFY_COLORS.Success = Theme.Success
+    NOTIFY_COLORS.Warning = Theme.Warning
+    NOTIFY_COLORS.Error = Theme.Error
+
+    for _, window in ipairs(self.Windows) do
+        if window.Gui and window.Gui.Parent then
+            applyThemeToInstance(window.Gui, oldTheme, self.Theme)
+            for _, instance in ipairs(window.Gui:GetDescendants()) do
+                applyThemeToInstance(instance, oldTheme, self.Theme)
+            end
+        end
+    end
+
+    return true
 end
 
 local Window = {}
