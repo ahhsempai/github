@@ -1,4 +1,9 @@
-local Airflow = loadstring(game:HttpGet("https://raw.githubusercontent.com/ahhsempai/github/main/Source.luau"))()
+local SourceUrl = "https://raw.githubusercontent.com/ahhsempai/github/main/Source.luau"
+local Source = assert(game:HttpGet(SourceUrl))
+local Loader = assert(loadstring(Source))
+local Airflow = Loader()
+assert(type(Airflow) == "table", "Source.luau did not return the Airflow library")
+assert(type(Airflow.LoadFont) == "function", "Source.luau is not the modified library version")
 
 Airflow:LoadFont({ Name = "ValleySans" })
 
